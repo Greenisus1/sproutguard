@@ -54,4 +54,36 @@ class Tests(unittest.TestCase):
  def test_frame(self):
   import sprites
   for w,h in ((80,27),(110,40),(180,65)):self.assertIn('38;2;',sprites.frame(a.Garden(),w,h,2,2))
+ def test_big_grid(self):
+  g=a.Garden(rows=7,cols=12);self.assertEqual((g.rows,g.cols),(7,12));self.assertEqual(len(g.mowers),7)
+  self.assertTrue(g.place(6,11,0));self.assertFalse(g.place(6,12,0));self.assertFalse(g.place(7,0,0))
+ def test_gridsize(self):
+  self.assertEqual(a.gridsize(50,130),(7,12));self.assertEqual(a.gridsize(36,100),(6,10));self.assertEqual(a.gridsize(27,80),(5,9))
+  self.assertEqual(a.minsize(a.Garden()),(80,27))
+ def test_upgrade_damage(self):
+  g=a.Garden();g.gap=999;g.energy=500;self.assertTrue(g.buy(1));self.assertEqual(g.energy,380)
+  g.place(0,0,1);g.enemies=[enemy()]
+  for _ in range(15):g.tick(.1)
+  self.assertEqual(g.shots[0]['damage'],35)
+ def test_upgrade_grower(self):
+  g=a.Garden();g.gap=999;g.energy=400;self.assertTrue(g.buy(0));g.place(0,0,0)
+  for _ in range(81):g.tick(.1)
+  self.assertEqual(g.energy,310)
+ def test_upgrade_cap_and_cost(self):
+  g=a.Garden();g.energy=400
+  for _ in range(3):self.assertTrue(g.buy(0))
+  self.assertFalse(g.buy(0))
+  g2=a.Garden();g2.energy=0;self.assertFalse(g2.buy(1))
+ def test_upgrade_mowers(self):
+  g=a.Garden();self.assertFalse(g.buy(4))
+  g.gap=999;g.enemies=[enemy(0,-.5)];g.tick(.1);self.assertFalse(g.mowers[0])
+  self.assertTrue(g.buy(4));self.assertTrue(all(g.mowers));self.assertEqual(g.energy,50)
+ def test_upgrade_heart(self):
+  g=a.Garden();self.assertTrue(g.buy(5));self.assertEqual(g.lives,6);self.assertEqual(g.energy,0)
+ def test_mower_art(self):
+  import sprites
+  self.assertIn('mower',sprites.ART)
+ def test_frame_big(self):
+  import sprites
+  self.assertIn('38;2;',sprites.frame(a.Garden(rows=7,cols=12),130,45,3,3))
 if __name__=='__main__':unittest.main()
